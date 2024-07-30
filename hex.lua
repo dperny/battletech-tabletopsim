@@ -15,8 +15,21 @@ function Hex:create(board, tokens)
 
     hex.elevation = tonumber(tokens[3])
 
+    local theme = string.match(tokens[5], "^\"([%a]*)\"")
+    if theme ~= "" then
+        hex.theme = theme
+    end
+
+
     hex.terrain = {}
     for terrain, level, exits in string.gmatch(tokens[4],"\"?([%a_]+):(%d+):?(%d*);?") do
+        if terrain == 'pavement' then
+            -- megamek treats pavement as a terrain type, because it has
+            -- gameplay effects, rather than as a theme, which is just fluff.
+            -- however, for our purposes, terrain types like pavement *are* just
+            -- fluff, as we don't do any gameplay calculations
+            hex.theme = 'pavement'
+        end
         hex.terrain[terrain] = tonumber(level)
         if terrain == 'road' then
             log("hex " .. hex.label .. " Parsed exit: \"" .. exits .. "\"")
@@ -30,11 +43,6 @@ function Hex:create(board, tokens)
     if hex.terrain['water'] and (hex.terrain['water'] > 0) then
         -- log("hex has water depth " .. hex.terrain['water'] .. ", elevation is " .. hex.elevation .. ", true elevation is " .. hex.elevation - hex.terrain['water'])
         hex.elevation = hex.elevation - hex.terrain['water']
-    end
-
-    local theme = string.match(tokens[5], "^\"([%a]*)\"")
-    if theme ~= "" then
-        hex.theme = theme
     end
 
     hex.prominence = 0
@@ -116,15 +124,14 @@ function Hex:place(offset)
     for terrain, level in pairs(self.terrain) do
         if Tiles.terrain[terrain] and Tiles.terrain[terrain][level] then
             terrainLabel = Tiles.terrain[terrain][level].label
-            if terrain == 'fire' then
-                log("add fire?")
+            if Tiles.terrain[terrain][level].data then
+                local obj = spawnObjectData({
+                    data = Tiles.terrain[terrain][level].data,
+                    position = tableCoord,
+                    rotation = rotation,
+                })
+                table.insert(self.componentObjects, obj)
             end
-            local obj = spawnObjectData({
-                data = Tiles.terrain[terrain][level].data,
-                position = tableCoord,
-                rotation = rotation,
-            })
-            table.insert(self.componentObjects, obj)
         end
     end
 

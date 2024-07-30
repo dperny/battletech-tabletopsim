@@ -34,8 +34,8 @@ State = {
             { name = "lunar", color = ToColor("c2c5cc")},
             { name = "mars", color = ToColor("a1251b")},
             { name = "volcano", color = ToColor("708090")},
+            { name = "pavement", color = ToColor("b9b4ab")},
             {},
-            {}
         },
         LockBuildings = true,
         MapText = {},
@@ -93,6 +93,10 @@ function onCustomColorColor(player, value, id)
         UI.setAttribute("CustomColor" .. index .. "_Preview", "colors", toColors(color))    
         State.Settings.CustomThemes[index].color = color
     end
+end
+
+function lockBuildings(player, value, id)
+    
 end
 
 function loadCustomThemes()

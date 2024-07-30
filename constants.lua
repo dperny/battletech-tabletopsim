@@ -29,6 +29,9 @@ Tiles = {
         fire = {
             {proto = 'c1fd45', data = {}, label = "Fire"}
         },
+        pavement = {
+            { label = "Paved" }
+        }
         --[[
         water = {
             {proto = 'edcb1c', data = {}, label = "Depth 1"},
@@ -265,9 +268,11 @@ function InitTiles()
     Tiles.elevation2.data.Locked = true
     for label, terrain in pairs(Tiles.terrain) do
         for _, block in ipairs(terrain) do
-            local d = bagContents[block.proto]
-            d.Locked = true
-            block.data = d
+            if block.proto then
+                local d = bagContents[block.proto]
+                d.Locked = true
+                block.data = d
+            end
         end
     end
 
