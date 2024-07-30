@@ -32,7 +32,7 @@
 
 <Panel id="MapPlacerPanel" class="configWindow"
     active="false">
-    <VerticalLayout>
+    <VerticalLayout childForceExpandHeight="false">
         <Panel class="titleBar">
             <Text id="MapPlacerText" text="Map Placer" class="UIText" rectAlignment="UpperCenter"
                 alignment="LowerCenter" width="230" height="80" offsetXY="0 55"></Text>
@@ -45,10 +45,11 @@
         click off of it, it fills up the outer VerticalLayout and covers the
         other elements.
         -->
-        <Panel minHeight="640"><VerticalLayout>
-            <InputField id="MapField" lineType="MultiLineNewLine" onEndEdit="updateMapSubmission" minHeight="320">
+        <Text flexibleHeight="0" horizontalOverflow="Wrap">Paste the contents of the Megamak .board file into the text box. Some .board files may be larger than can be pasted into a single box. If your file is too long, remove any dangling bits of the last line, and paste the remainder of the map from the last successful line.</Text>
+        <Panel flexibleHeight="1"><VerticalLayout>
+            <InputField id="MapField" lineType="MultiLineNewLine" onEndEdit="updateMapSubmission" minHeight="200">
             </InputField>
-            <InputField id="MapField2" lineType="MultiLineSubmit" onEndEdit="updateMapSubmission2" minHeight="320">
+            <InputField id="MapField2" lineType="MultiLineNewLine" onEndEdit="updateMapSubmission2" minHeight="200">
             </InputField>
         </VerticalLayout></Panel>
         <HorizontalLayout preferredHeight="30" flexibleHeight="0">
@@ -72,6 +73,7 @@
             <Text class="heading" 
                 tooltip="The location of the upper left corner hex of the map."
                 tooltipPosition="Below">Map Offset</Text>
+            <Text>The location of the upper left corner hex of the map.</Text>
             <HorizontalLayout class="optionRow">
                 <Text class="optionLabel">x:</Text>
                 <InputField class="optionField" id="MapOffsetX" characterValidation="Decimal"></InputField>
@@ -80,12 +82,15 @@
                 <Text class="optionLabel">z:</Text>
                 <InputField class="optionField" id="MapOffsetY" characterValidation="Decimal"></InputField>
             </HorizontalLayout>
+            <!--
             <Text class="hr"></Text>
-            <HorizontalLayout class="optionRow">
+            <HorizontalLayout padding="20 20 10 10" childForceExpandHeight="false" childForceExpandWidth="false" childAlignment="MiddleCenter">
                 <Toggle id="LockBuildings"
                     tooltip="Lock or unlock building terrain blocks. Auto buildings can be kind of ugly, and this allows you to hand-replace them."
-                    tooltipPosition="Bottom">Lock Buildings</Toggle>
+                    tooltipPosition="Bottom"
+                    onValueChanged="lockBuildings">Lock Buildings</Toggle>
             </HorizontalLayout>
+            -->
             <Text class="hr"></Text>
             <Text class="heading"
                 tooltip="Custom Theme allows recoloring base terrain based on the theme set in the map file."

@@ -100,10 +100,6 @@ function lockBuildings(player, value, id)
 end
 
 function loadCustomThemes()
-    local ui = UI.getXmlTable()
-    -- now, we need to find the VerticalLayout with id "CustomThemes"
-    -- we're doing this in a lazy and fragile way right now, by just
-    -- indexing the table as we know it.
     local i = 1
     for _, customColor in ipairs(State.Settings.CustomThemes) do
         local id = "CustomColor" .. i
@@ -147,7 +143,7 @@ end
 
 function placeMap()
     log("place map")
-    board = Board:create(map_submission .. map_submission2)
+    board = Board:create(map_submission .. "\n" .. map_submission2)
     board:place(master_offset)
 end
 
