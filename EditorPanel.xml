@@ -1,0 +1,162 @@
+<!-- Xml UI. See documentation: https://api.tabletopsimulator.com/ui/introUI/ -->
+<Defaults>
+    <Panel class="MapPlacerPanel"  color="#e6e6e6" outline="#635351" outlineSize="2 -2"/>
+    <Button class="topButtons" width="25" height="25" rectAlignment="UpperLeft" color="#eeeeee" offsetXY="-3 -3"/>
+    <Toggle class="topToggle" width="25" height="25" rectAlignment="UpperRight" color="#eeeeee" offsetXY="-3 -3"/>
+    <Text class="UIText" fontSize="18" fontStyle="Bold" color="#000000"/>
+    <InputField class="UIInputField" width="50" height="28" fontSize="13" fontStyle="Bold" colors="#dddddd|#FFFFFF|#C8C8C8|rgba(0.78,0.78,0.78,0.5)"/>
+    <Button class="bottomButtons" width="25" height="25" rectAlignment="LowerLeft" color="#eeeeee" showAnimation="Grow" hideAnimation="Shrink"/>
+
+    <Button class="controlButtons" height="100" width="40" color="#ffffff66"/>
+    <Image class="controlImages" color="#ffffff99" height="95" width="35"/>
+
+    <Panel class="titleBar" preferredHeight="30" flexibleHeight="0" color="#a6a6a6"></Panel>
+    <Panel class="configWindow"
+        width="500"
+        height="700"
+        showAnimation="Grow"
+        hideAnimation="Shrink"
+        returnToOriginalPositionWhenReleased="false"
+        allowDragging="true"
+        color="#e6e6e6"></Panel>
+
+    <HorizontalLayout class="optionRow" preferredHeight="50" 
+        flexibleHeight="0" padding="10 10 10 10"
+        childForceExpandWidth="false">
+    </HorizontalLayout>
+    <Text class="heading" fontSize="16" fontStyle="bold"></Text>
+    <Text class="optionLabel" flexibleWidth="0" preferredWidth="30"></Text>
+    <InputField class="optionField" flexibleWidth="1" preferredWidth="50"></InputField>
+    <Text class="hr" fontSize="10" text="--------------------------------------------------------------------------"></Text>
+</Defaults>
+
+<Panel id="MapPlacerPanel" class="configWindow"
+    active="false">
+    <VerticalLayout>
+        <Panel class="titleBar">
+            <Text id="MapPlacerText" text="Map Placer" class="UIText" rectAlignment="UpperCenter"
+                alignment="LowerCenter" width="230" height="80" offsetXY="0 55"></Text>
+            <Button id="closeButton" class="topButtons" rectAlignment="UpperRight" color = "#990000"
+                textColor="#FFFFFF" text="X" onClick="hidePanel"></Button>
+        </Panel>
+        <!--
+        Somewhat unclear to me why we have to do this, but if we don't nest the
+        InputField inside of a Panel inside of a VerticalLayout, then when we
+        click off of it, it fills up the outer VerticalLayout and covers the
+        other elements.
+        -->
+        <Panel minHeight="640"><VerticalLayout>
+            <InputField id="MapField" lineType="MultiLineNewLine" onEndEdit="updateMapSubmission" minHeight="320">
+            </InputField>
+            <InputField id="MapField2" lineType="MultiLineSubmit" onEndEdit="updateMapSubmission2" minHeight="320">
+            </InputField>
+        </VerticalLayout></Panel>
+        <HorizontalLayout preferredHeight="30" flexibleHeight="0">
+            <Button alignment="LowerCenter" text="Submit" rectAlignment="LowerCenter" onClick="placeMap"></Button>
+            <Button alignment="LowerCenter" text="Clear Map" rectAlignment="LowerCenter" onClick="clearMap"></Button>
+        </HorizontalLayout>
+    </VerticalLayout>
+</Panel>
+
+<Panel id="MapPlacerOptions" class="configWindow"
+    active="false">
+    <VerticalLayout>
+        <Panel class="titleBar">
+            <Text id="OptionsTitle" text="Map Placer Options" class="UIText"
+                rectAlignment="UpperCenter" alignment="LowerCenter" width="230" height="80" offsetXY="0 55"></Text>
+            <Button id="closeOptions" class="topButtons" rectAlignment="UpperRight"
+                color = "#990000" textColor="#FFFFFF" text="X" onClick="hideOptions"></Button>
+        </Panel>
+        <Text class="hr"></Text>
+        <VerticalLayout id="OptionsTable" preferredHeight="670" flexibleHeight="0" childForceExpandHeight="false">
+            <Text class="heading" 
+                tooltip="The location of the upper left corner hex of the map."
+                tooltipPosition="Below">Map Offset</Text>
+            <HorizontalLayout class="optionRow">
+                <Text class="optionLabel">x:</Text>
+                <InputField class="optionField" id="MapOffsetX" characterValidation="Decimal"></InputField>
+                <Text class="optionLabel">y:</Text>
+                <InputField class="optionField" id="MapOffsetZ" characterValidation="Decimal"></InputField>
+                <Text class="optionLabel">z:</Text>
+                <InputField class="optionField" id="MapOffsetY" characterValidation="Decimal"></InputField>
+            </HorizontalLayout>
+            <Text class="hr"></Text>
+            <HorizontalLayout class="optionRow">
+                <Toggle id="LockBuildings"
+                    tooltip="Lock or unlock building terrain blocks. Auto buildings can be kind of ugly, and this allows you to hand-replace them."
+                    tooltipPosition="Bottom">Lock Buildings</Toggle>
+            </HorizontalLayout>
+            <Text class="hr"></Text>
+            <Text class="heading"
+                tooltip="Custom Theme allows recoloring base terrain based on the theme set in the map file."
+                tooltipPosition="Below">Custom Theme Coloring</Text>
+            <VerticalScrollView minHeight="400" horizontalScrollbarVisibility="AutoHideAndExpandViewport">
+                <VerticalLayout width="480" id="CustomThemes" childForceExpandHeight="false">
+                    <HorizontalLayout id="CustomColor1" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor1_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor1_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor1_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor2" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor2_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor2_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor2_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor3" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor3_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor3_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor3_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor4" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor4_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor4_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor4_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor5" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor5_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor5_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor5_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor6" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor6_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor6_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor6_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor7" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor7_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor7_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor7_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor8" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor8_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor8_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor8_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                    <HorizontalLayout id="CustomColor9" class="optionRow">
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Theme:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor9_Name" onValueChanged="onCustomColorName"></InputField>
+                        <Panel padding="5 5 0 0" flexibleWidth="0"><Text>Color:</Text></Panel>
+                        <InputField class="optionField" id="CustomColor9_Color" onValueChanged="onCustomColorColor"></InputField>
+                        <Button id="CustomColor9_Preview" minWidth="30" minHeight="30" flexibleWidth="0" colors="#ffffff00|#ffffff00|#ffffff00|#ffffff00"></Button>
+                    </HorizontalLayout>
+                </VerticalLayout>
+            </VerticalScrollView>
+        </VerticalLayout>
+    </VerticalLayout>
+</Panel>
