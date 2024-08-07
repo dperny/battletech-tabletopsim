@@ -87,16 +87,44 @@ function Board:clear()
     end
 end
 
--- Board:encode doesn't actually marshal a board to json or any such thing.
--- It transforms the board into an object with no direct object references,
--- just GUIDs. This lets us load the board back later.
-function Board:encode()
-    local eb = {}
+function Board:getObjects()
+    local allObjects = {}
     for q, row in pairs(self.hexes) do
-        eb[q] = {}
         for r, hex in pairs(row) do
+            for _, obj in pairs(hex:getObjects()) do
+                table.insert(allObjects, obj)
+            end
         end
     end
+    return allObjects
+end
+
+-- Returns a json-ready state of the board object.
+function Board:encode()
+    local eb = {}
+    eb.boardFile = self.boardFile
+    eb.size = self.size
+    eb.offsetElevation = self.offsetElevation
+    eb.hexes = {}
+    for q, row in pairs(self.hexes) do
+        eb.hexes[q] = {}
+        for r, hex in pairs(row) do
+            eb.hexes[q][r] = Hex:encode()
+        end
+    end
+end
+
+function Board:decode(board)
+    setmetatable(board, Board)
+    local newHexes = {}
+    for q, row in pairs(board.hexes) do
+        newHexes[q] = {}
+        for r, hex in pairs(row) do
+            newHexes[q][r] = Hex:decode(board, hex)
+        end
+    end
+    board.hexes = newHexes
+    return board
 end
 
 -- PlaceCoroutine spreads the Board:place action over many frames, which makes

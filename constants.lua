@@ -23,8 +23,9 @@ Tiles = {
             {proto = 'cd671c', data = {}, label = "Rough"}
         },
         water = {
-            {proto = '5be4c0', data = {}, label = "Depth 1"},
-            {proto = '5f7c3a', data = {}, label = "Depth 2"}
+            [0] = {proto = 'edcb1c', data = {}, label = "Depth 0"},
+            [1] = {proto = '5be4c0', data = {}, label = "Depth 1"},
+            [2] = {proto = '5f7c3a', data = {}, label = "Depth 2"}
         },
         fire = {
             {proto = 'c1fd45', data = {}, label = "Fire"}
@@ -256,7 +257,9 @@ function InitTiles()
     ---[[
     local bag = getObjectFromGUID('c49556')
     local bagContents = {}
-    for _, item in ipairs(bag.getData().ContainedObjects) do
+    local bagData = bag.getData()
+    local containedObjects = bagData.ContainedObjects
+    for _, item in ipairs(containedObjects) do
         bagContents[item.GUID] = item
     end
 
@@ -267,7 +270,7 @@ function InitTiles()
     Tiles.elevation2.data = bagContents[Tiles.elevation2.proto]
     Tiles.elevation2.data.Locked = true
     for label, terrain in pairs(Tiles.terrain) do
-        for _, block in ipairs(terrain) do
+        for _, block in pairs(terrain) do
             if block.proto then
                 local d = bagContents[block.proto]
                 d.Locked = true

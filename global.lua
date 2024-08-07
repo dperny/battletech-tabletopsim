@@ -4,10 +4,17 @@ require("battletech/constants")
 require("battletech/board")
 require("battletech/customTheme")
 
+math.randomseed(os.time())
+
+-- Curious about the code? The latest version should be available at
+-- github.com/dperny/battletech-tabletopsim
+-- Some things in this code are weird holdovers, unused features, or
+-- WIPs of future work. It's not exactly clean. If it looks unused or
+-- broken, it probably is.
+
 master_offset = Vector(-25.50, 0.96, -30.31)
-map_submission = ""
-map_submission2 = ""
-board = nil
+
+LiveBoard = nil
 
 -- ToColor takes a color as a hex string and returns a color table
 function ToColor(colorHex)
@@ -38,8 +45,14 @@ State = {
             {},
         },
         LockBuildings = true,
-        MapText = {},
+        MapText = {"",""},
     },
+    -- right now, the only major thing we can do with a map after it is
+    -- placed is clear it. to accomplish this, we will keep a big list
+    -- of every object created by a hex in the settings. This will let
+    -- us clear after loads. This is a temporary thing, and we will make
+    -- it nice later.
+    ComponentObjects = {},
 }
 
 function showPanel()
@@ -65,7 +78,7 @@ end
 function onCustomColorName(player, value, id)
     local index = string.match(id, "CustomColor([1-9])_Name")
     if not index then
-        log("cannot figure out index for id " .. id)
+        -- log("cannot figure out index for id " .. id)
         return
     end
     index = tonumber(index)
@@ -78,7 +91,7 @@ end
 function onCustomColorColor(player, value, id)
     local index = string.match(id, "CustomColor([1-9])_Color")
     if not index then
-        log("cannot figure out index for id " .. id)
+        -- log("cannot figure out index for id " .. id)
         return
     end
     index = tonumber(index)
@@ -95,8 +108,16 @@ function onCustomColorColor(player, value, id)
     end
 end
 
-function lockBuildings(player, value, id)
-    
+function onMapOffset(player, value, id)
+    local n = tonumber(value)
+
+    if id == "MapOffsetX" then
+        State.Settings.Offset:setAt('x', n)
+    elseif id == "MapOffsetY" then
+        State.Settings.Offset:setAt('y', n)
+    else
+        State.Settings.Offset:setAt('z', n)
+    end
 end
 
 function loadCustomThemes()
@@ -120,19 +141,42 @@ function loadOffset()
     UI.setAttribute("MapOffsetZ", "text", "" .. State.Settings.Offset.z)
 end
 
+function loadMapText()
+    if State.Settings.MapText then
+        if State.Settings.MapText[1] then
+            UI.setAttribute("MapField", "text", State.Settings.MapText[1])
+        end
+        if State.Settings.MapText[2] then
+            UI.setAttribute("MapField2", "text", State.Settings.MapText[2])
+        end
+    end
+end
+
 --[[ The onLoad event is called after the game save finishes loading. --]]
 function onLoad(script_state)
     -- check if data is empty. If so, load defaults.
     if script_state ~= "" then
-        log(script_state)
+        -- log(script_state)
         State = JSON.decode(script_state)
     end
+    -- un-nil MapText
+    if not State.Settings.MapText[1] then
+        State.Settings.MapText[1] = ""
+    end
+    if not State.Settings.MapText[2] then
+        State.Settings.MapText[2] = ""
+    end
+    State.Settings.Offset = Vector(State.Settings.Offset)
     loadCustomThemes()
     loadOffset()
     InitTiles()
+    loadMapText()
 end
 
 function onSave()
+    if LiveBoard then
+        State.ComponentObjects = LiveBoard:getObjects()
+    end
     return JSON.encode(State)
 end
 
@@ -142,24 +186,29 @@ function onUpdate()
 end
 
 function placeMap()
-    log("place map")
-    board = Board:create(map_submission .. "\n" .. map_submission2)
-    board:place(master_offset)
+    -- log("place map")
+    LiveBoard = Board:create(State.Settings.MapText[1] .. "\n" .. State.Settings.MapText[2])
+    LiveBoard:place(State.Settings.Offset)
+    -- State.ComponentObjects = LiveBoard:getObjects()
 end
 
 function clearMap()
-    log("clear map")
-    board:clear()
+    -- log("clear map")
+    -- LiveBoard:clear()
+    if LiveBoard then
+        State.ComponentObjects = LiveBoard:getObjects()
+    end
+    for _, guid in pairs(State.ComponentObjects) do
+        local obj = getObjectFromGUID(guid)
+        obj.destruct()
+    end
 end
-    
 
 function updateMapSubmission(player, map, id)
-    log("Update submission")
+    -- log("Update submission")
     State.Settings.MapText[1] = map
-    map_submission = map
 end
 
 function updateMapSubmission2(player, map, id)
     State.Settings.MapText[2] = map
-    map_submission2 = map
 end

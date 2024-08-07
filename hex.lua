@@ -32,7 +32,7 @@ function Hex:create(board, tokens)
         end
         hex.terrain[terrain] = tonumber(level)
         if terrain == 'road' then
-            log("hex " .. hex.label .. " Parsed exit: \"" .. exits .. "\"")
+            -- log("hex " .. hex.label .. " Parsed exit: \"" .. exits .. "\"")
             hex.terrain['road'] = tonumber(exits)
         end
         if terrain == 'building' then
@@ -112,11 +112,10 @@ function Hex:place(offset)
         local obj = spawnObjectData({
             data = Tiles.elevation.data,
             position = spacerV,
-            rotation = rotation
+            rotation = rotation,
         })
-        table.insert(self.componentObjects, obj)
+        table.insert(self.componentObjects, obj.getGUID())
     end
-    ---[[
 
     local terrainLabel = ""
     tableCoord:setAt('y', tableCoord.y + ((self.board.offsetElevation + self.elevation) * ELEVATION))
@@ -124,13 +123,24 @@ function Hex:place(offset)
     for terrain, level in pairs(self.terrain) do
         if Tiles.terrain[terrain] and Tiles.terrain[terrain][level] then
             terrainLabel = Tiles.terrain[terrain][level].label
-            if Tiles.terrain[terrain][level].data then
-                local obj = spawnObjectData({
-                    data = Tiles.terrain[terrain][level].data,
-                    position = tableCoord,
-                    rotation = rotation,
-                })
-                table.insert(self.componentObjects, obj)
+            -- hate special casing, but Depth 0 water is special cased.
+            -- we do not spawn the base tile for depth 0 water, we just
+            -- spawn the depth 0 tile, and we spawn that instead of the
+            -- base tile.
+            if not (terrain == 'water' and level == 0) then
+                -- give placed terrain a random rotation to make
+                -- the board look less repetitive.
+                local randomRot = rotation:copy()
+
+                randomRot:setAt('y', randomRot.y + (60 * math.random(6)))
+                if Tiles.terrain[terrain][level].data then
+                    local obj = spawnObjectData({
+                        data = Tiles.terrain[terrain][level].data,
+                        position = tableCoord,
+                        rotation = randomRot,
+                    })
+                    table.insert(self.componentObjects, obj.getGUID())
+                end
             end
         end
     end
@@ -138,6 +148,11 @@ function Hex:place(offset)
     local cap = CliffEdge[self.exits]
     -- only CliffEdge tiles have a rotation
     rotation:set(nil, rotation.y + (60 * cap.rotation))
+
+    -- again, special casing water.
+    if self.terrain.water == 0 then
+        cap = Tiles.terrain.water[0]
+    end
 
     local obj = spawnObjectData({
         data = cap.data,
@@ -165,11 +180,11 @@ function Hex:place(offset)
             end
         end
     })
-    table.insert(self.componentObjects, obj)
+    table.insert(self.componentObjects, obj.getGUID())
 
     -- finally, spawn any topping terrain. roads are one such terrain.
     if self.terrain.road then
-        log("hex " .. self.label .." has road " .. self.terrain.road)
+        -- log("hex " .. self.label .." has road " .. self.terrain.road)
         -- try to locate a road matching this hex's road based on exits
         local roadData = Roads[self.terrain.road]
         if roadData then 
@@ -181,21 +196,21 @@ function Hex:place(offset)
                 position = tableCoord,
                 rotation = roadRot,
             })
-            table.insert(self.componentObjects, roadObj)
+            table.insert(self.componentObjects, roadObj.getGUID())
         else
-            log("missing roadData for exits " .. self.terrain.road)
+            -- log("missing roadData for exits " .. self.terrain.road)
         end
     end
 
     if self.terrain.building then
-        log("hex " .. self.label .. " has building " .. self.terrain.building)
+        -- log("hex " .. self.label .. " has building " .. self.terrain.building)
         if not self.terrain.bldg_elev then
             self.terrain.bldg_elev = 0
         end
         -- get the building we'll be using
         local building = Buildings[self.terrain.building]
         if not building then
-            log("hex " .. self.label .. " building absent " .. self.terrain.building)
+            -- log("hex " .. self.label .. " building absent " .. self.terrain.building)
         end
         -- starting at the level of the terrain, stack until the height of the building
         local start = self.elevation + self.board.offsetElevation
@@ -209,7 +224,7 @@ function Hex:place(offset)
                 position = tc,
                 rotation = rot,
             })
-            table.insert(self.componentObjects, buildingObj)
+            table.insert(self.componentObjects, buildingObj.getGUID())
         end
     end
 end
@@ -267,8 +282,30 @@ function Hex:getObjects()
 end
 
 function Hex:clear()
-    for _, obj in ipairs(self.componentObjects) do
+    for _, guid in ipairs(self.componentObjects) do
+        local obj = getObjectFromGUID(guid)
         obj.destruct()
     end
     self.componentObjects = {}
+end
+
+function Hex:encode()
+    local hex = {}
+    hex.x = self.x
+    hex.y = self.y
+    hex.q = self.q
+    hex.r = self.r
+    hex.label = self.label
+    hex.elevation = self.elevation
+    hex.theme = self.theme
+    hex.terrain = self.terrain
+    hex.prominence = self.prominence
+    hex.componentObjects = self.componentObjects
+    return hex
+end
+
+function Hex:decode(board, hex)
+    setmetatable(hex, Hex)
+    hex.board = board
+    return hex
 end
