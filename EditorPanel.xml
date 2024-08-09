@@ -162,6 +162,9 @@
                     </HorizontalLayout>
                 </VerticalLayout>
             </VerticalScrollView>
+            <HorizontalLayout preferredHeight="30" flexibleHeight="0">
+                <Button alignment="LowerCenter" text="Restore Defaults" rectAlignment="LowerCenter" onClick="restoreDefaults"></Button>
+            </HorizontalLayout>
         </VerticalLayout>
     </VerticalLayout>
 </Panel>

@@ -78,6 +78,16 @@ function Board:getHexAxial(q, r)
     return nil
 end
 
+function Board:recolor(theme, color)
+    for _, row in pairs(self.hexes) do
+        for _, hex in pairs(row) do
+            if (hex.theme == theme) or (theme == "(default)" and hex.theme == "") then
+                hex:recolor(color)
+            end
+        end
+    end
+end
+
 -- Board:clear clears the physical table top of all tiles.
 function Board:clear()
     for q, row in pairs(self.hexes) do
@@ -107,20 +117,21 @@ function Board:encode()
     eb.offsetElevation = self.offsetElevation
     eb.hexes = {}
     for q, row in pairs(self.hexes) do
-        eb.hexes[q] = {}
+        eb.hexes[tostring(q)] = {}
         for r, hex in pairs(row) do
-            eb.hexes[q][r] = Hex:encode()
+            eb.hexes[tostring(q)][tostring(r)] = hex:encode()
         end
     end
+    return eb
 end
 
 function Board:decode(board)
     setmetatable(board, Board)
     local newHexes = {}
     for q, row in pairs(board.hexes) do
-        newHexes[q] = {}
+        newHexes[tonumber(q)] = {}
         for r, hex in pairs(row) do
-            newHexes[q][r] = Hex:decode(board, hex)
+            newHexes[tonumber(q)][tonumber(r)] = Hex:decode(board, hex)
         end
     end
     board.hexes = newHexes

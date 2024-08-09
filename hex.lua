@@ -47,6 +47,9 @@ function Hex:create(board, tokens)
 
     hex.prominence = 0
     hex.componentObjects = {}
+    -- baseTile is the tile that represents the actual surface of the hex,
+    -- and is the tile that is colored based on theme.
+    hex.baseTile = nil
 
     return hex
 end
@@ -181,6 +184,7 @@ function Hex:place(offset)
         end
     })
     table.insert(self.componentObjects, obj.getGUID())
+    self.baseTile = obj.getGUID()
 
     -- finally, spawn any topping terrain. roads are one such terrain.
     if self.terrain.road then
@@ -226,6 +230,13 @@ function Hex:place(offset)
             })
             table.insert(self.componentObjects, buildingObj.getGUID())
         end
+    end
+end
+
+function Hex:recolor(color)
+    if self.baseTile then
+        local obj = getObjectFromGUID(self.baseTile)
+        obj.setColorTint(color)
     end
 end
 
@@ -301,6 +312,7 @@ function Hex:encode()
     hex.terrain = self.terrain
     hex.prominence = self.prominence
     hex.componentObjects = self.componentObjects
+    hex.baseTile = self.baseTile
     return hex
 end
 

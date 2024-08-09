@@ -30,6 +30,20 @@ function ToColor(colorHex)
     return c
 end
 
+Defaults = {
+    CustomThemes = {
+        { name = "snow", color = ToColor("ffffff") },
+        { name = "grass", color = ToColor("4F7942") },
+        { name = "desert", color = ToColor("964b00")},
+        { name = "tropical", color = ToColor("43a967")},
+        { name = "lunar", color = ToColor("c2c5cc")},
+        { name = "mars", color = ToColor("a1251b")},
+        { name = "volcano", color = ToColor("708090")},
+        { name = "pavement", color = ToColor("b9b4ab")},
+        { name = "(default)", color = ToColor("b3c342")},
+    },
+}
+
 State = {
     Settings = {
         Offset = Vector(-25.50, 0.96, -30.31),
@@ -53,6 +67,7 @@ State = {
     -- us clear after loads. This is a temporary thing, and we will make
     -- it nice later.
     ComponentObjects = {},
+    Board = nil,
 }
 
 function showPanel()
@@ -105,6 +120,8 @@ function onCustomColorColor(player, value, id)
         UI.setAttribute(id, "textColor", "#323232")
         UI.setAttribute("CustomColor" .. index .. "_Preview", "colors", toColors(color))    
         State.Settings.CustomThemes[index].color = color
+        local ct = State.Settings.CustomThemes[index]
+        LiveBoard:recolor(ct.name, ct.color)
     end
 end
 
@@ -118,6 +135,14 @@ function onMapOffset(player, value, id)
     else
         State.Settings.Offset:setAt('z', n)
     end
+end
+
+function restoreDefaults()
+    for i, theme in pairs(Defaults.CustomThemes) do
+        State.Settings.CustomThemes[i] = theme
+    end
+    -- reload all of the custom themes now, so this restoration becomes reflected in the defaults
+    loadCustomThemes()
 end
 
 function loadCustomThemes()
@@ -166,6 +191,9 @@ function onLoad(script_state)
     if not State.Settings.MapText[2] then
         State.Settings.MapText[2] = ""
     end
+    if State.Board then
+        LiveBoard = Board:decode(State.Board)
+    end
     State.Settings.Offset = Vector(State.Settings.Offset)
     loadCustomThemes()
     loadOffset()
@@ -175,8 +203,9 @@ end
 
 function onSave()
     if LiveBoard then
-        State.ComponentObjects = LiveBoard:getObjects()
+        State.Board = LiveBoard:encode()
     end
+    -- log(State.Board)
     return JSON.encode(State)
 end
 
@@ -194,7 +223,8 @@ end
 
 function clearMap()
     -- log("clear map")
-    -- LiveBoard:clear()
+    LiveBoard:clear()
+    --[[
     if LiveBoard then
         State.ComponentObjects = LiveBoard:getObjects()
     end
@@ -202,6 +232,7 @@ function clearMap()
         local obj = getObjectFromGUID(guid)
         obj.destruct()
     end
+    --]]
 end
 
 function updateMapSubmission(player, map, id)
