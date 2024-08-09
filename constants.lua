@@ -16,7 +16,7 @@ Tiles = {
     -- table with the GUIDs of terrain levels.
     terrain = {
         woods = {
-            {proto = '7e677f', data = {}, label = "Light Woods"},
+            {proto = '0a6a37', data = {}, label = "Light Woods"},
             {proto='f570df',data={}, label = "Heavy Woods"}
         },
         rough = {

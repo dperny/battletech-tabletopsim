@@ -76,11 +76,11 @@
             <Text>The location of the upper left corner hex of the map.</Text>
             <HorizontalLayout class="optionRow">
                 <Text class="optionLabel">x:</Text>
-                <InputField class="optionField" id="MapOffsetX" characterValidation="Decimal"></InputField>
+                <InputField class="optionField" id="MapOffsetX" characterValidation="Decimal" onValueChanged="onMapOffset"></InputField>
                 <Text class="optionLabel">y:</Text>
-                <InputField class="optionField" id="MapOffsetZ" characterValidation="Decimal"></InputField>
+                <InputField class="optionField" id="MapOffsetY" characterValidation="Decimal" onValueChanged="onMapOffset"></InputField>
                 <Text class="optionLabel">z:</Text>
-                <InputField class="optionField" id="MapOffsetY" characterValidation="Decimal"></InputField>
+                <InputField class="optionField" id="MapOffsetZ" characterValidation="Decimal" onValueChanged="onMapOffset"></InputField>
             </HorizontalLayout>
             <!--
             <Text class="hr"></Text>
