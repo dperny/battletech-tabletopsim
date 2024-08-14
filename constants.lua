@@ -28,7 +28,7 @@ Tiles = {
             [2] = {proto = '5f7c3a', data = {}, label = "Depth 2"}
         },
         fire = {
-            {proto = 'c1fd45', data = {}, label = "Fire"}
+            {proto = 'a175c7', data = {}, label = "Fire"}
         },
         pavement = {
             { label = "Paved" }

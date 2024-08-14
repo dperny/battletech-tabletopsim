@@ -134,12 +134,19 @@ function Hex:place(offset)
                 -- give placed terrain a random rotation to make
                 -- the board look less repetitive.
                 local randomRot = rotation:copy()
+                local terrainAdjCoord = tableCoord:copy()
+                -- fire is associated with a small cube emitter. we want
+                -- to move the placed fire down a very small amount to put
+                -- that emitter below the terrain, and avoid z-fighting.
+                if terrain == 'fire' then
+                    terrainAdjCoord:setAt('y', terrainAdjCoord.y - 0.01)
+                end
 
                 randomRot:setAt('y', randomRot.y + (60 * math.random(6)))
                 if Tiles.terrain[terrain][level].data then
                     local obj = spawnObjectData({
                         data = Tiles.terrain[terrain][level].data,
-                        position = tableCoord,
+                        position = terrainAdjCoord,
                         rotation = randomRot,
                     })
                     table.insert(self.componentObjects, obj.getGUID())
@@ -178,7 +185,9 @@ function Hex:place(offset)
             obj.setDescription(desc)
             for _, customColor in ipairs(State.Settings.CustomThemes) do
                 if (customColor.name == self.theme) and customColor.color then
-                    obj.setColorTint(customColor.color)
+                    if self.terrain.water ~= 0 then
+                        obj.setColorTint(customColor.color)
+                    end
                 end
             end
         end
@@ -234,7 +243,7 @@ function Hex:place(offset)
 end
 
 function Hex:recolor(color)
-    if self.baseTile then
+    if self.baseTile and (self.terrain.water ~= 0) then
         local obj = getObjectFromGUID(self.baseTile)
         obj.setColorTint(color)
     end
